@@ -6,14 +6,11 @@
 #include <iostream>
 #include <string>
 #include <vector>
-// #include "Card.h"
-// #include "DerivedPokemon.h"
 // #include "Enumerators.h"
-
-#include "SK_Cards.hpp"
-#include "SK_Input.hpp"
-#include "SK_Functions.hpp"
-#include "SK_Player.hpp"
+#include "Cards.hpp"
+#include "Input.hpp"
+#include "Functions.hpp"
+#include "Player.hpp"
 
 using namespace std;
 

@@ -6,8 +6,8 @@
 #pragma once
 #include <iostream>
 #include <string>
-#include "Pokemon.h"
-#include "Enumerators.h"
+#include "Cards.hpp"
+
 
 class Element {
 protected:
@@ -31,6 +31,11 @@ public:
 	ElementType getWeaknessType() { return this->weaknessType; }
 	ElementType getResistanceType() { return this->resistanceType; }
 	ElementType getAttackType() { return this->attackType; }
+
+	/*Return string for each type*/
+	string getElementType_String() { return elementTypeNames.at(attackType); }
+	string getResistanceType_String() { return elementTypeNames.at(resistanceType); }
+	string getWeaknessType_String() { return elementTypeNames.at(weaknessType); }
 };
 
 

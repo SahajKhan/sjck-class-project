@@ -1,9 +1,10 @@
+#pragma once
 #include <ctime>
 #include <stdlib.h>
 #include <algorithm>
 #include <random>
 #include <iostream>
-#include "SK_Cards.hpp"
+#include "Cards.hpp"
 
 class Player {
     string name;
