@@ -53,5 +53,4 @@ createPokemon("Gastly", "Shadowball", "Smog", "Lick", ElementType::PSYCHIC)
 createPokemon("Omanyte", "Surf", "Water Gun", "Bubble", ElementType::WATER)
 createPokemon("Raikou", "Thunderbolt", "Thunder", "Shock", ElementType::LIGHTNING)
 createPokemon("Deino", "Headbutt", "Rock Throw", "Bite", ElementType::COLORLESS)
-*/
 
