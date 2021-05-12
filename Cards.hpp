@@ -40,7 +40,7 @@ public:
 	Pokemon(std::string name, string attack1Name, string attack2Name, string attack3Name, Element* element) {
 		srand((unsigned) time(0));
 
-		attack1 = (rand()%19) + 1;		//attack1 will be an int from 1 - 20
+		attack1 = (rand()%19) + 1;		//attack1 will be an int from 1 - 20  ** would we need to change it to the %21 since I think it starts the rand starts at 0?
 		attack2 = (rand()%49) + 21;		//attack2 will be an int from 21 - 70
 		attack3 = (rand()%69) + 71;		//attack3 will be an int from 71 - 140
 
@@ -93,7 +93,7 @@ public:
 	void Heal(const int healingAmount) {
 		/* So that the Pokemon does not heal less than 0 hitpoints */
 		if (healingAmount > hitPoints)
-			hitPoints = maxHP;
+			hitPoints = maxHP; // do we need to destroy/discard the healing card? wasnt sure how you had that programmed
 		else
 			hitPoints += healingAmount;
 	}
@@ -143,7 +143,7 @@ public:
 	//flip a coin, if heads, discard an energy attached to your opponents pokemon
 	//crushing hammer
 };
-
+// Trainer card swaps opponents active pokemon with one on the bench
 class PokemonCatcher : TrainerCard{
 public:
 	PokemonCatcher() { 
@@ -159,6 +159,7 @@ public:
 	}
 };
 
+//Trainer Card that retrieves 2 discarded energy cards
 class EnergyRetrieval : TrainerCard{
 public:
 	EnergyRetrieval() {
@@ -188,7 +189,7 @@ public:
 		}
 	}
 };
-
+//Trainer card that heal only the active pokemon
 class Potion : TrainerCard {
 public:
 	Potion() {
@@ -199,7 +200,7 @@ public:
 		pokemon.Heal(30);
 	}
 };
-
+// Trainer card that allows player to peek at two cards on top of the deck and allows player to choose one card and discard another
 class AcroBike: TrainerCard {
 public:
 	AcroBike() {
@@ -223,6 +224,7 @@ public:
 	}
 };
 
+//Trainer card that decrements an energy from opponent if it lands on heads
 class CrushingHammer: TrainerCard {
 public:
 	CrushingHammer() {
@@ -234,10 +236,10 @@ public:
 		if (!coinFlip()) //if coin toss is tails
 			cout << "Your opponent keeps energy\n";
 		else {
-			activePokemon.decrementEnergy();
+			activePokemon.decrementEnergy();// was wondering if this might decrement the energy on the wrong pokemon.  Is activePokemon labelled differently for each player?
 			Card * newEnergyCard = new EnergyCard;
 
-			asdf //keeping this here to mark error to look at this code later
+			asdf //keeping this here to mark error to look at this code later__________________________________________ put lines here to make it easier to spot
 			discardPile.push_back(*newEnergyCard); //not sure if this will work, also potential memory leak
 		}
 
