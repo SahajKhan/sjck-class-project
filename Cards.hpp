@@ -125,6 +125,9 @@ public:
 	string toString() {
 		cout << "Name: " << name << endl;
 		cout << "Card Function: " << cardFunction;
+		/** 
+		 * #################### NEEDS TO RETURN A STRING OR MAKE IT VOID #####################################
+		*/
 	}
 	
 	//Card Type one: trade opponents active card on hand with one on bench
@@ -237,15 +240,15 @@ public:
 			cout << "Your opponent keeps energy\n";
 		else {
 			activePokemon.decrementEnergy();// was wondering if this might decrement the energy on the wrong pokemon.  Is activePokemon labelled differently for each player?
-			Card * newEnergyCard = new EnergyCard;
+			Card * newEnergyCard = new EnergyCard();
 
-			asdf //keeping this here to mark error to look at this code later__________________________________________ put lines here to make it easier to spot
+			asdf; //keeping this here to mark error to look at this code later__________________________________________ put lines here to make it easier to spot
 			discardPile.push_back(*newEnergyCard); //not sure if this will work, also potential memory leak
 		}
 
 	}
 
-}
+};
 
 /*Energy Card Type*/
 class EnergyCard : public Card{
