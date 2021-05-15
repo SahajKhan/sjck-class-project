@@ -134,6 +134,12 @@ public:
         }
     }
 
+    /*Discard card from hand*/
+    void discardFromHand(int location) {
+        discardPile.push_back(handCards.at(location));
+        handCards.erase(handCards.begin() + location);
+    }
+
     /*Add energy to the Active Pokemon*/
     void addEnergy() {
         for (int i = 0; i < handCards.size(); i++) {
@@ -178,9 +184,34 @@ public:
         return false;
     }
 
+    /*Check to see if there is at least one Pokemon card on hand*/
+    bool hasPokemonInHand() {
+        for (int i = 0; i < handCards.size(); i++) {
+            if (handCards.at(i)->getCardType() == CardType::POKEMON)
+                return true;
+        }
+        return false;
+    }
 
-    /*Use the trainer card in the deck, if the location given doesn't work, return false*/
-    bool isTrainerCard(int location) {
+    /*Check to see if there is at least one Pokemon card on hand*/
+    bool hasPokemonInBench() {
+        for (int i = 0; i < benchCards.size(); i++) {
+            if (benchCards.at(i)->getCardType() == CardType::POKEMON)
+                return true;
+        }
+        return false;
+    }
+
+    /*Check to see if card in the deck is a trainer, if the location given doesn't work, return false*/
+    bool isTrainerCard_inHand(int location) {
+        if (handCards.at(location)->getCardType() != CardType::TRAINER) {
+            return false; //throw
+        }
+        return true;
+    }
+
+    /*Check to see if card in the deck is a pokemon, if the location given doesn't work, return false*/
+    bool isPokemonCard_inHand(int location) {
         if (handCards.at(location)->getCardType() != CardType::TRAINER) {
             return false; //throw
         }
@@ -188,7 +219,7 @@ public:
     }
 
     TrainerType whichTrainerType(int location) {
-        if (isTrainerCard(location)) {
+        if (isTrainerCard_inHand(location)) {
             TrainerCard* trainerCard = (TrainerCard*)handCards.at(location); //cast card as trainer ptr
             return trainerCard->trainerType;
         }
@@ -204,20 +235,18 @@ public:
 
     /*Pokemon Catcher*/
 
-    /*Swap opponents active pokemon with one on the bench*/
-    void swapCards(Pokemon*& activeCard, Pokemon*& benchCard) {
+    /*Swap active pokemon with one on the bench*/
+    void swapCards(int location) {
 		Pokemon * temp;
-		temp = activeCard;
-		activeCard = benchCard;
-		benchCard = temp; //not sure if these changes will be out of scope
+		temp = activePokemon;
+		activePokemon = benchCards.at(location);
+		benchCards.at(location) = temp;
 	}
-
-
 
     /*Energy Retrieval*/
 
     /*Check if the discard pile contains at least one energy type*/
-	bool canRetrieveEnergy(vector<Card*>& discardPile) {
+	bool canRetrieveEnergy() {
 		for (int i =0; i < discardPile.size(); i++) {
 			if (discardPile[i]->getCardType() == CardType::ENERGY)
 				return true;
@@ -226,7 +255,7 @@ public:
 	}
 
 	/*Retrieve at least one energy type card from the discard pile and push into handCards*/
-	void retrieveEnergy(vector<Card*>& handCards, vector<Card*>& discardPile) {
+	void retrieveEnergy() {
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < discardPile.size(); j++) {
 				if (discardPile[j]->getCardType() == CardType::ENERGY) {
@@ -242,9 +271,12 @@ public:
 
     /*Potion*/
 
-    /*Heals by 30 HP*/
-    void potionHeal(Pokemon* pokemon) {
-		pokemon->Heal(30);
+    /*Heals activePokemon by 30 HP*/
+    void potionHeal(int location) {
+		activePokemon->heal(30);
+
+        //discard card
+        discardFromHand(location);
 	}
 
 
@@ -252,7 +284,7 @@ public:
     /*AcroBike*/
 
     /*allows player to peek at two cards on top of the deck and allows player to choose one card and discard another*/
-    void pick1from2(vector <Card*>& pokemonDeck, vector <Card*>& handCards, vector <Card*>& discardPile) {
+    void pick1from2(int location) {
 		Card *choice1, *choice2;
 		int choiceSelection;
 		choice1 = pokemonDeck.back();
@@ -280,6 +312,7 @@ public:
 		else {
 			//TODO: Throw
 		}
+        discardFromHand(location);
 	}
 
 
@@ -287,7 +320,7 @@ public:
     /*CrushingHammer*/
 
     /*decrements an energy from opponent if it lands on heads*/
-    void crushingHammer(Pokemon*& activePokemon, vector<Card*>& discardPile) {
+    void crushingHammer() {
 		cout << "A coin has been tossed\n";
 		if (!coinFlip()) //if coin toss is tails
 			cout << "Your opponent keeps energy\n";
@@ -297,8 +330,5 @@ public:
 			//keeping this here to mark error to look at this code later__________________________________________ put lines here to make it easier to spot
 			discardPile.push_back(new EnergyCard); //not sure if this will work, also potential memory leak
 		}
-
 	}
-
-
 };

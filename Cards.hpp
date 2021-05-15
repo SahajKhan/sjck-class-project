@@ -93,7 +93,7 @@ public:
 	}
 
 	/*Heal Pokemon*/
-	void Heal(const int healingAmount) {
+	void heal(const int healingAmount) {
 		/* So that the Pokemon does not heal less than 0 hitpoints */
 		if (healingAmount > hitPoints)
 			hitPoints = maxHP; // do we need to destroy/discard the healing card? wasnt sure how you had that programmed

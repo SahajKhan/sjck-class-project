@@ -19,6 +19,9 @@ void chooseActivePokemon(Player &player);
 /*Checks to see if player has energy on hand, if so give player the option to use it*/
 void checkAndUseEnergy(Player& player);
 
+/*Checks to see if player has a trainer card on hand, and gives the option to use it, return true if card was used*/
+bool useTrainerCard(Player& currentTurnPlayer, Player& nextTurnPlayer);
+
 int main() {
 	creatingPokemon cp;
 	cp.createPokemonList();
@@ -131,12 +134,13 @@ void checkAndUseEnergy(Player& player) {
 		player.addEnergy(inputInt-1); //add energy to benchCard pokemon // not sure if inputInt will match correctly
 }
 
-/*Checks to see if player has a trainer card on hand, and gives the option to use it*/
-void userTrainerCard(Player& currentTurnPlayer, Player& nextTurnPlayer) {
-	int inputInt;
-
+/*Checks to see if player has a trainer card on hand, and gives the option to use it, return true if card was used*/
+bool useTrainerCard(Player& currentTurnPlayer, Player& nextTurnPlayer) {
 	if (!currentTurnPlayer.hasTrainerCardInHand())
-		return;
+		return false;
+
+	int inputInt;
+	int trainerCardLocation;
 	
 	cout << "Would you like tochoose a trainer card to use?\n";
 	currentTurnPlayer.print_HandCards();
@@ -144,26 +148,61 @@ void userTrainerCard(Player& currentTurnPlayer, Player& nextTurnPlayer) {
 	inputInt = input(1,2);
 	
 	if(inputInt == 2)
-		return;
+		return false;
 
 	while (true) {
 		cout << "Choose your trainer card\n";
-		inputInt = input(1, currentTurnPlayer.getHandCardsSize());
+		trainerCardLocation = input(1, currentTurnPlayer.getHandCardsSize());
 
-		if (!currentTurnPlayer.isTrainerCard(inputInt-1))
+		if (!currentTurnPlayer.isTrainerCard_inHand(trainerCardLocation-1))
 			cout << "That isn't a trainer card.\n";
 		else
 			break;
 	}
 
-	switch (currentTurnPlayer.whichTrainerType(inputInt))
+	switch (currentTurnPlayer.whichTrainerType(trainerCardLocation-1))
 	{
 	case TrainerType::POKEMON_CATCHER :
 		//current location in programming
+		cout << "Pokemon Catcher\n";
+		if (!nextTurnPlayer.hasPokemonInBench()) {
+			cout << nextTurnPlayer.getName() << " does not have a benched Pokemon to choose.\n";
+			return false;
+		}
+		cout << "Choose a card for "<< nextTurnPlayer.getName() << " to replace active pokemon with.\n";
+		nextTurnPlayer.print_BenchCards();
+		inputInt = input(1, nextTurnPlayer.getBenchCardsSize());
+		nextTurnPlayer.swapCards(inputInt-1);
+		currentTurnPlayer.discardFromHand(trainerCardLocation-1);		
 		break;
 	
+	case TrainerType::ENERGY_RETRIEVAL :
+		cout << "Energy Retrieval\n";
+		if (!currentTurnPlayer.canRetrieveEnergy()) {
+			cout << "There isn't an energy card in the discard pile.\n";
+			return false;
+		}
+		currentTurnPlayer.retrieveEnergy();
+		break;
+	
+	case TrainerType::POTION :
+		cout << "Potion Heal\n";
+		currentTurnPlayer.potionHeal(trainerCardLocation-1);
+		break;
+	case TrainerType::ACROBIKE :
+		cout << "Acro Bike\n";
+		cout << "Pick one of the top two cards to put into your hand, discard the other\n";
+		currentTurnPlayer.pick1from2(trainerCardLocation-1);
+		break;
+	case TrainerType::CRUSHING_HAMMER :
+		cout << "Crushing Hammer\n";
+		cout << "A coin will be flipped, if heads, your opponent will lose one energy from their active Pokemon.\n";
+		nextTurnPlayer.crushingHammer();
+		currentTurnPlayer.discardFromHand(trainerCardLocation-1);
+		break;
 	default:
 		break;
 	}
+	return true;
 
 }
