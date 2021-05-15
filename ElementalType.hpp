@@ -4,10 +4,10 @@
  Instructor:	Kristopher Roberts
  *************************************************/
 #pragma once
-#include <iostream>
 #include <string>
-#include "Cards.hpp"
+using namespace std;
 
+enum class ElementType { PSYCHIC, COLORLESS, FIRE, GRASS, WATER, LIGHTNING };
 
 class Element {
 protected:
@@ -33,9 +33,29 @@ public:
 	ElementType getAttackType() { return this->attackType; }
 
 	/*Return string for each type*/
-	string getElementType_String() { return elementTypeNames.at(attackType); }
-	string getResistanceType_String() { return elementTypeNames.at(resistanceType); }
-	string getWeaknessType_String() { return elementTypeNames.at(weaknessType); }
+	string getType_toString(ElementType elementType) {
+		switch (elementType) {
+		case ElementType::PSYCHIC:
+			return "Psychic";
+		case ElementType::COLORLESS:
+			return "Colorless";
+		case ElementType::FIRE:
+			return "Fire";
+		case ElementType::GRASS:
+			return "Grass";
+		case ElementType::WATER:
+			return "Water";
+		case ElementType::LIGHTNING:
+			return "Lightning";
+		default:
+			return "Unknown Type";
+		}
+		return "Unknown Type";
+	}
+
+	string getElementType_String() { return getType_toString(attackType); }
+	string getResistanceType_String() { return getType_toString(resistanceType); }
+	string getWeaknessType_String() { return getType_toString(weaknessType); }
 };
 
 

@@ -8,10 +8,14 @@
 #include <vector>
 #include <ctime>
 #include <stdlib.h>
-#include "Enumerators.hpp"
 #include "ElementalType.hpp"
+#include "Functions.hpp"
 using namespace std;
 
+enum class CardType {POKEMON, TRAINER, ENERGY};
+enum class TrainerType {POKEMON_CATCHER, ENERGY_RETRIEVAL, POTION, ACROBIKE, CRUSHING_HAMMER};
+
+/*Base Card Type*/
 class Card {
 protected:
 	string name;	//Name of Card or Pokemon
@@ -21,7 +25,6 @@ public:
 	CardType getCardType() { return cardType; }
 	string toString();
 };
-
 
 /*Pokemon Card Type*/
 class Pokemon: public Card {
@@ -35,12 +38,13 @@ protected:
 	string attack1Name;			//Name of the first attack
 	string attack2Name; 		//Name of the second attack
 	string attack3Name; 		//Name of the third attack
-	Element* element;			//Element Type
+	Element* element = nullptr;			//Element Type
 public:
 	Pokemon(std::string name, string attack1Name, string attack2Name, string attack3Name, Element* element) {
 		srand((unsigned) time(0));
+		this->name = name;
 
-		attack1 = (rand()%19) + 1;		//attack1 will be an int from 1 - 20  ** would we need to change it to the %21 since I think it starts the rand starts at 0?
+		attack1 = (rand()%20) + 1;		//attack1 will be an int from 1 - 20  ** would we need to change it to the %21 since I think it starts the rand starts at 0?
 		attack2 = (rand()%49) + 21;		//attack2 will be an int from 21 - 70
 		attack3 = (rand()%69) + 71;		//attack3 will be an int from 71 - 140
 
@@ -106,16 +110,6 @@ public:
 		return false;
 	}
 
-	void addEnergy(vector <Card*>& handCards) {
-		for (int i = 0; i < handCards.size(); i++) {
-			if (handCards[i]->getCardType() == CardType::ENERGY ) {
-				handCards.erase(handCards.begin() + i);
-				energyLevel++;
-				return;
-			}
-		}
-	}
-
 	void toString() {
 		cout << name << "\tHP: " << getHitPoints() << endl;
 		cout << "Attack 1: " << getAttack1Name() << " " << getAttack1() << endl;
@@ -132,10 +126,13 @@ public:
 	}
 };
 
+
+
 /*Trainer Card Type*/
 class TrainerCard : public Card{
 public:
 	string cardFunction;
+	TrainerType trainerType;
 	TrainerCard() {
 		cardType = CardType::TRAINER;
 	}
@@ -161,19 +158,30 @@ public:
 	//flip a coin, if heads, discard an energy attached to your opponents pokemon
 	//crushing hammer
 };
-// Trainer card swaps opponents active pokemon with one on the bench
+
+
+
+
+/*Energy Card Type*/
+class EnergyCard : public Card{
+public:
+	EnergyCard() {
+		name = "Energy";
+		cardType = CardType::ENERGY;
+	}	
+};
+
+
+
+
+
+// Trainer that card swaps opponents active pokemon with one on the bench
 class PokemonCatcher :public TrainerCard{
 public:
 	PokemonCatcher() { 
 		name = "Pokemon Catcher";
 		cardFunction = "Trade your opponents active card with one on bench";
-	}
-
-	void swapCards(Pokemon*& activeCard, Pokemon*& benchCard) {
-		Pokemon * temp;
-		temp = activeCard;
-		activeCard = benchCard;
-		benchCard = temp; //not sure if these changes will be out of scope
+		trainerType = TrainerType::POKEMON_CATCHER;
 	}
 };
 
@@ -183,40 +191,19 @@ public:
 	EnergyRetrieval() {
 		name = "Energy Retrieval";
 		cardFunction = "Put up to 2 basic Energy Cards from your discard pile into your hands";
-	}
-
-	/*Check if the discard pile contains at least one energy type*/
-	bool canRetrieveEnergy(vector<Card*>& discardPile) {
-		for (int i =0; i < discardPile.size(); i++) {
-			if (discardPile[i]->getCardType() == CardType::ENERGY)
-				return true;
-		}
-		return false;
-	}
-
-	/*Retrieve at least one energy type card from the discard pile and push into handCards*/
-	void retrieveEnergy(vector<Card*>& handCards, vector<Card*>& discardPile) {
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < discardPile.size(); j++) {
-				if (discardPile[j]->getCardType() == CardType::ENERGY) {
-					handCards.push_back(discardPile[j]);
-					discardPile.erase(discardPile.begin() + j);//erase the element in vector
-					break;
-				}
-			}
-		}
+		trainerType = TrainerType::ENERGY_RETRIEVAL;
 	}
 };
+
 //Trainer card that heal only the active pokemon
 class Potion :public TrainerCard {
 public:
 	Potion() {
 		name = "Potion";
 		cardFunction = "Heal 30 damage from your active Pokemon";
+		trainerType = TrainerType::POTION;
 	}
-	void potionHeal(Pokemon* pokemon) {
-		pokemon->Heal(30);
-	}
+	
 };
 // Trainer card that allows player to peek at two cards on top of the deck and allows player to choose one card and discard another
 class AcroBike: public TrainerCard {
@@ -224,37 +211,9 @@ public:
 	AcroBike() {
 		name = "Acrobike";
 		cardFunction = "Look at the top 2 cards of your deck and put 1 of them into your hand.\nDiscard the other card";
+		trainerType = TrainerType::ACROBIKE;
 	}
-	void pick1from2(vector <Card*>& pokemonDeck, vector <Card*>& handCards, vector <Card*>& discardPile) {
-		Card *choice1, *choice2;
-		int choiceSelection;
-		choice1 = pokemonDeck.back();
-		pokemonDeck.pop_back();
-
-		choice2 = pokemonDeck.back();
-		pokemonDeck.pop_back();
-
-		cout << "1:\n";
-		choice1->toString();
-		cout << "\n2:\n";
-		choice2->toString();
-		cout << endl;		
-
-		choiceSelection = input(1,2);
-
-		if (choiceSelection == 1) {
-			handCards.push_back(choice1);
-			discardPile.push_back(choice2);
-		} 
-		else if(choiceSelection == 2) {
-			handCards.push_back(choice2);
-			discardPile.push_back(choice1);	
-		}
-		else {
-			//TODO: Throw
-		}
-		
-	}
+	
 };
 
 //Trainer card that decrements an energy from opponent if it lands on heads
@@ -263,28 +222,6 @@ public:
 	CrushingHammer() {
 		name = "Crushing Hammer";
 		cardFunction = "Flip a coin. If heads, discard an Energy from 1 of your Openents Active Pokemon";
+		trainerType = TrainerType::CRUSHING_HAMMER;
 	}
-	void crushingHammer(Pokemon*& activePokemon, vector<Card*>& discardPile) {
-		cout << "A coin has been tossed\n";
-		if (!coinFlip()) //if coin toss is tails
-			cout << "Your opponent keeps energy\n";
-		else {
-			activePokemon->decrementEnergy(); //Decrement energy for the given activePokemon
-			Card * newEnergyCard = new EnergyCard();
-
-			//keeping this here to mark error to look at this code later__________________________________________ put lines here to make it easier to spot
-			discardPile.push_back(newEnergyCard); //not sure if this will work, also potential memory leak
-		}
-
-	}
-
-};
-
-/*Energy Card Type*/
-class EnergyCard : public Card{
-public:
-	EnergyCard() {
-		name = "Energy";
-		cardType = CardType::ENERGY;
-	}	
 };
