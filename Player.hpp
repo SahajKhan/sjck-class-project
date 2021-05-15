@@ -5,32 +5,47 @@
 #include <random>
 #include <iostream>
 #include "Cards.hpp"
+#include "Pokemon_list.hpp"
 
 class Player {
     string name;
 
     /*Not sure if cards should be ptr to card, list would be better than vector*/
-    vector <Card> pokemonDeck;	 //Deck of cards
-	vector <Card> discardPile;	 //Pile of discarded cards
-	vector <Card> prizeCards;	 //Prize Card Pile
-    vector <Card> handCards;     //Cards on hand
-    vector <Pokemon> benchCards; //Pokemon sitting on the bench
-    Card activePokemon;          //Active Pokemon
+    vector <Card*> pokemonDeck;	  //Deck of cards
+	vector <Card*> discardPile;	  //Pile of discarded cards
+	vector <Card*> prizeCards;	  //Prize Card Pile
+    vector <Card*> handCards;     //Cards on hand
+    vector <Pokemon*> benchCards; //Pokemon sitting on the bench
+    Pokemon * activePokemon;      //Active Pokemon
 
 
 public:
     Player(string name) {
         this->name = name;
-        srand((unsigned) time(0)); //seed time for random
+        Card* card_ptr;
 
+        /*Store 20 Pokemon Cards in Deck of Cards*/
+        for (int i = 0; i < 20; i++) {
+            pokemonDeck.push_back(pokemonList.back());  //store pointer from back of list into vector
+            pokemonList.pop_back();                     //remove stored point from list so it can't be re-used
+        }
 
+        /*Store the 5 Trainer Cards 4 times each*/
+        for (int i = 0; i < 4; i++) {
+            pokemonDeck.push_back(new PokemonCatcher);
+            pokemonDeck.push_back(new EnergyRetrieval);
+            pokemonDeck.push_back(new Potion);
+            pokemonDeck.push_back(new AcroBike);
+            pokemonDeck.push_back(new CrushingHammer);
+        }
 
-        //TODO: Store all Cards in Pokemon Deck//
-
-
+        /*Store 20 Energy Cards*/
+        for (int i = 0; i < 20; i ++) {
+            pokemonDeck.push_back(new EnergyCard);
+        }
 
         /*Shuffle the Deck*/
-        shuffleDeck();
+        shuffleDeck();  //not sure if function will actually work
 
         /*Draw 7 cards and store into handCards*/
         for (int i = 0; i < 7; i++) { drawCard(); }
@@ -55,7 +70,7 @@ public:
      */
     bool mulligan() {
         for (int i = 0; i < pokemonDeck.size(); i++) {
-            if (pokemonDeck[i].getCardType() == CardType::POKEMON)
+            if (pokemonDeck[i]->getCardType() == CardType::POKEMON)
                 return false;
         }
 
@@ -75,20 +90,26 @@ public:
         pokemonDeck.pop_back();                  //Delete last element in pokemonDeck
     }
 
+    /*Set active Pokemon, if the card chosen is not a Pokemon, return false*/
+    bool setActivePokemon(int vectorLocation) {
+        if (handCards[vectorLocation]->getCardType() != CardType::POKEMON)
+            return false;
+
+        activePokemon = (Pokemon*)handCards[vectorLocation]; //Cast Card* into Pokemon* and set it as activePokemon
+        handCards.erase(handCards.begin() + vectorLocation); //Remove ptr from vector
+
+    }
+
     void benchCards_toString() {
         for (int i = 0; i < benchCards.size(); i++) {
-            cout << i << ": " << benchCards[i].getName() << endl;
+            cout << i << ": " << benchCards[i]->getName() << endl;
         }
     }
 
     void handCards_toString() {
         for (int i = 0; i < handCards.size(); i++) {
-            cout << i << ": " << handCards[i].getName() << endl;
+            cout << i << ": " << handCards[i]->getName() << endl;
         }
     }
-
-
-
-
     string getName() { return name; }
 };

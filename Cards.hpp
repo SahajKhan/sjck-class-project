@@ -76,9 +76,8 @@ public:
 	/*Increase energyLevel by 1*/
 	void incrementEnergy() { energyLevel++; }
 	void decrementEnergy() { 
-		if (energyLevel = 0)
-			return;
-		energyLevel--;
+		if (energyLevel != 0)
+			energyLevel--;
 	}
 
 	/*Damage Pokemon*/
@@ -96,6 +95,25 @@ public:
 			hitPoints = maxHP; // do we need to destroy/discard the healing card? wasnt sure how you had that programmed
 		else
 			hitPoints += healingAmount;
+
+		/*TODO:
+				Move potion card to discard pile*/
+	}
+
+	bool containsEnergy() {
+		if (energyLevel > 0)
+			return true;
+		return false;
+	}
+
+	void addEnergy(vector <Card*>& handCards) {
+		for (int i = 0; i < handCards.size(); i++) {
+			if (handCards[i]->getCardType() == CardType::ENERGY ) {
+				handCards.erase(handCards.begin() + i);
+				energyLevel++;
+				return;
+			}
+		}
 	}
 
 	void toString() {
@@ -122,12 +140,9 @@ public:
 		cardType = CardType::TRAINER;
 	}
 
-	string toString() {
+	void toString() {
 		cout << "Name: " << name << endl;
 		cout << "Card Function: " << cardFunction;
-		/** 
-		 * #################### NEEDS TO RETURN A STRING OR MAKE IT VOID #####################################
-		*/
 	}
 	
 	//Card Type one: trade opponents active card on hand with one on bench
@@ -147,23 +162,23 @@ public:
 	//crushing hammer
 };
 // Trainer card swaps opponents active pokemon with one on the bench
-class PokemonCatcher : TrainerCard{
+class PokemonCatcher :public TrainerCard{
 public:
 	PokemonCatcher() { 
 		name = "Pokemon Catcher";
 		cardFunction = "Trade your opponents active card with one on bench";
 	}
 
-	void swapCards(Pokemon& activeCard, Pokemon& benchCard) {
+	void swapCards(Pokemon*& activeCard, Pokemon*& benchCard) {
 		Pokemon * temp;
-		temp = &activeCard;
+		temp = activeCard;
 		activeCard = benchCard;
-		benchCard = *temp;
+		benchCard = temp; //not sure if these changes will be out of scope
 	}
 };
 
 //Trainer Card that retrieves 2 discarded energy cards
-class EnergyRetrieval : TrainerCard{
+class EnergyRetrieval :public TrainerCard{
 public:
 	EnergyRetrieval() {
 		name = "Energy Retrieval";
@@ -171,19 +186,19 @@ public:
 	}
 
 	/*Check if the discard pile contains at least one energy type*/
-	bool energyRetrieval(vector<Card>& discardPile) {
+	bool canRetrieveEnergy(vector<Card*>& discardPile) {
 		for (int i =0; i < discardPile.size(); i++) {
-			if (discardPile[i].getCardType() == CardType::ENERGY)
+			if (discardPile[i]->getCardType() == CardType::ENERGY)
 				return true;
 		}
 		return false;
 	}
 
 	/*Retrieve at least one energy type card from the discard pile and push into handCards*/
-	void energyretrieve(vector<Card>& handCards, vector<Card>& discardPile) {
+	void retrieveEnergy(vector<Card*>& handCards, vector<Card*>& discardPile) {
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < discardPile.size(); j++) {
-				if (discardPile[j].getCardType() == CardType::ENERGY) {
+				if (discardPile[j]->getCardType() == CardType::ENERGY) {
 					handCards.push_back(discardPile[j]);
 					discardPile.erase(discardPile.begin() + j);//erase the element in vector
 					break;
@@ -193,26 +208,26 @@ public:
 	}
 };
 //Trainer card that heal only the active pokemon
-class Potion : TrainerCard {
+class Potion :public TrainerCard {
 public:
 	Potion() {
 		name = "Potion";
 		cardFunction = "Heal 30 damage from your active Pokemon";
 	}
-	void potionHeal(Pokemon& pokemon) {
-		pokemon.Heal(30);
+	void potionHeal(Pokemon* pokemon) {
+		pokemon->Heal(30);
 	}
 };
 // Trainer card that allows player to peek at two cards on top of the deck and allows player to choose one card and discard another
-class AcroBike: TrainerCard {
+class AcroBike: public TrainerCard {
 public:
 	AcroBike() {
 		name = "Acrobike";
 		cardFunction = "Look at the top 2 cards of your deck and put 1 of them into your hand.\nDiscard the other card";
 	}
-	void pick1from2(vector <Card>& pokemonDeck) {
-		Card choice1, choice2;
-		
+	void pick1from2(vector <Card*>& pokemonDeck, vector <Card*>& handCards, vector <Card*>& discardPile) {
+		Card *choice1, *choice2;
+		int choiceSelection;
 		choice1 = pokemonDeck.back();
 		pokemonDeck.pop_back();
 
@@ -220,30 +235,45 @@ public:
 		pokemonDeck.pop_back();
 
 		cout << "1:\n";
-		choice1.toString();
+		choice1->toString();
 		cout << "\n2:\n";
-		choice2.toString();
+		choice2->toString();
 		cout << endl;		
+
+		choiceSelection = input(1,2);
+
+		if (choiceSelection == 1) {
+			handCards.push_back(choice1);
+			discardPile.push_back(choice2);
+		} 
+		else if(choiceSelection == 2) {
+			handCards.push_back(choice2);
+			discardPile.push_back(choice1);	
+		}
+		else {
+			//TODO: Throw
+		}
+		
 	}
 };
 
 //Trainer card that decrements an energy from opponent if it lands on heads
-class CrushingHammer: TrainerCard {
+class CrushingHammer :public TrainerCard {
 public:
 	CrushingHammer() {
 		name = "Crushing Hammer";
 		cardFunction = "Flip a coin. If heads, discard an Energy from 1 of your Openents Active Pokemon";
 	}
-	void crushingHammer(Pokemon& activePokemon, vector<Card>& discardPile) {
+	void crushingHammer(Pokemon*& activePokemon, vector<Card*>& discardPile) {
 		cout << "A coin has been tossed\n";
 		if (!coinFlip()) //if coin toss is tails
 			cout << "Your opponent keeps energy\n";
 		else {
-			activePokemon.decrementEnergy();// was wondering if this might decrement the energy on the wrong pokemon.  Is activePokemon labelled differently for each player?
+			activePokemon->decrementEnergy(); //Decrement energy for the given activePokemon
 			Card * newEnergyCard = new EnergyCard();
 
-			asdf; //keeping this here to mark error to look at this code later__________________________________________ put lines here to make it easier to spot
-			discardPile.push_back(*newEnergyCard); //not sure if this will work, also potential memory leak
+			//keeping this here to mark error to look at this code later__________________________________________ put lines here to make it easier to spot
+			discardPile.push_back(newEnergyCard); //not sure if this will work, also potential memory leak
 		}
 
 	}
@@ -256,18 +286,5 @@ public:
 	EnergyCard() {
 		name = "Energy";
 		cardType = CardType::ENERGY;
-	}
-
-	void useEnergy(Pokemon& card, vector <Card>& handCards) {
-		for (int i = 0; i < handCards.size(); i++) {
-			if (handCards[i].getCardType() == CardType::ENERGY ) {
-				handCards.erase(handCards.begin() + i);
-				card.incrementEnergy();
-				break;
-			}
-				
-		}
-
-	}
-	
+	}	
 };
