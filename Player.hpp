@@ -61,6 +61,12 @@ public:
     /*Getters*/
     int getHandCardsSize()  { return handCards.size(); }
     int getBenchCardsSize() { return benchCards.size(); }
+    int getActivePokemonAttack1() { return activePokemon->getAttack1(); }
+    int getActivePokemonAttack2() { return activePokemon->getAttack2(); }
+    int getActivePokemonAttack3() { return activePokemon->getAttack3(); }
+    int getActivePokemonEnergyLevel() { return activePokemon->getEnergyLevel(); }
+    int getActivePokemonHP() { return activePokemon->getHitPoints(); }
+    int getNumofPrizeCards() { return prizeCards.size(); }
     string getName() { return name; }
     string getActivePokemonName() { return activePokemon->getName(); }
 
@@ -166,6 +172,37 @@ public:
 		}
     }
 
+    /*Damage active Pokemon*/
+    void activePokemonRecieveDamage(int damage) {
+        activePokemon->recieveDamage(damage);
+    }
+
+    void newActivePokemonfromBench(int location) {
+        discardPile.push_back(activePokemon);
+        activePokemon = benchCards.at(location);
+        benchCards.erase(benchCards.begin() + location);
+    }
+
+
+    bool newActivePokemonfromHand(int location) {
+        if (!isPokemonCard_inHand(location)) 
+            return false;
+        
+        discardPile.push_back(activePokemon);
+        activePokemon = (Pokemon*)handCards.at(location);
+        handCards.erase(handCards.begin() + location);
+    }
+
+    /*Move one prize card to hand*/
+    void winPrizeCard() {
+        if (prizeCards.size() < 1)
+            return;
+
+        handCards.push_back(prizeCards.back()); //save card into handCards
+        prizeCards.pop_back();                  //remove from prizeCards
+
+    }
+
     /*Check to see if there is at leat one energy card in hand*/
     bool hasEnergyCardInHand() {
         for (int i = 0; i < handCards.size(); i++) {
@@ -216,6 +253,12 @@ public:
             return false; //throw
         }
         return true;
+    }
+
+    bool activePokemonHasEnergy() {
+        if (activePokemon->containsEnergy())
+            return true;
+        return false;
     }
 
     TrainerType whichTrainerType(int location) {

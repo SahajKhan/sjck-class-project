@@ -22,6 +22,15 @@ void checkAndUseEnergy(Player& player);
 /*Checks to see if player has a trainer card on hand, and gives the option to use it, return true if card was used*/
 bool useTrainerCard(Player& currentTurnPlayer, Player& nextTurnPlayer);
 
+/*Player's pokemon attack*/
+void attack(Player& attackingPlayer, Player& defendingPlayer);
+
+/*Check if active Pokemon is dead*/
+bool checkPokemonIsDead(Player& player);
+
+/*Chose new pokemon*/
+bool chooseNewPokemon(Player& player);
+
 int main() {
 	creatingPokemon cp;
 	cp.createPokemonList();
@@ -73,14 +82,60 @@ int main() {
 	/*Now the game starts*/
 	while (true) {
 		cout << Player_1.getName() << "'s turn\n";
+
+		//if hand deck has energy, give player the option to use it on bench cards or active pokemon, give player chance to not use energy
 		checkAndUseEnergy(Player_1);
+
+		//now allow player to use one trainer card if it applies, give player option to skip
+		if (!useTrainerCard(Player_1, Player_2))
+			cout << "Trainer Card could not be used\n";
+		
+		attack(Player_1, Player_2);
+		if (checkPokemonIsDead(Player_2)) {
+			cout << Player_1.getName() << "'s active pokemon won the battle.\n";
+			cout << Player_1.getName() << " wins a prize card.\n";
+			Player_1.winPrizeCard();
+			if (Player_1.getNumofPrizeCards() < 1) {
+				cout << Player_1.getName() << " has won the game!\n";
+				return 0;
+			}
+
+			cout << Player_2.getName() << "'s active pokemon lost the battle.\nChoose a new pokemon\n";
+			chooseNewPokemon(Player_2);
+		}
+
+
+
+
+		cout << Player_2.getName() << "'s turn\n";
+
+		//if hand deck has energy, give player the option to use it on bench cards or active pokemon, give player chance to not use energy
+		checkAndUseEnergy(Player_2);
+
+		//now allow player to use one trainer card if it applies, give player option to skip
+		if (!useTrainerCard(Player_2, Player_1))
+			cout << "Trainer Card could not be used\n";
+		
+		attack(Player_2, Player_1);
+		if (checkPokemonIsDead(Player_2)) {
+			cout << Player_2.getName() << "'s active pokemon won the battle.\n";
+			cout << Player_2.getName() << " wins a prize card.\n";
+			Player_2.winPrizeCard();
+			if (Player_2.getNumofPrizeCards() < 1) {
+				cout << Player_2.getName() << " has won the game!\n";
+				return 0;
+			}
+
+			cout << Player_1.getName() << "'s active pokemon lost the battle.\nChoose a new pokemon\n";
+			chooseNewPokemon(Player_1);
+		}
 
 	}
 
 
-	//if hand deck has energy, give player the option to use it on bench cards or active pokemon, give player chance to not use energy
 	
-	//now allow player to use one trainer card if it applies, give player option to skip
+	
+	
 
 	//now allow players active pokemon to attack opponents pokemom(only if pokemon has enough energy, and only if the opponent has an active pokemon), allow player to skip
 		//if attack is chosen, check the opponents card to see if dead
@@ -205,4 +260,74 @@ bool useTrainerCard(Player& currentTurnPlayer, Player& nextTurnPlayer) {
 	}
 	return true;
 
+}
+
+/*Player's pokemon attack*/
+void attack(Player& attackingPlayer, Player& defendingPlayer) {
+	int inputInt;
+
+	cout << attackingPlayer.getName() << " would you like to attack?";
+	cout << "1: Yes\n2: No\n";
+	inputInt = input(1,2);
+	if (inputInt == 2)
+		return;
+
+	switch (attackingPlayer.getActivePokemonEnergyLevel()) {
+		case 0:
+			cout << "Your pokemon does not have energy to attack";
+			break;
+		case 1:
+			defendingPlayer.activePokemonRecieveDamage(attackingPlayer.getActivePokemonAttack1());
+			break;
+		case 2:
+			defendingPlayer.activePokemonRecieveDamage(attackingPlayer.getActivePokemonAttack1());
+			break;
+		case 3:
+			defendingPlayer.activePokemonRecieveDamage(attackingPlayer.getActivePokemonAttack1());
+			break;
+		default:
+			defendingPlayer.activePokemonRecieveDamage(attackingPlayer.getActivePokemonAttack1());
+			break;
+	}
+
+}
+
+
+/*Check if active Pokemon is dead*/
+bool checkPokemonIsDead(Player& player) {
+	if (player.getActivePokemonHP() <= 0)
+		return true;
+	return false;
+}
+
+bool chooseNewPokemon(Player& player) {
+	int inputInt;
+	int location;
+	cout << player.getName() << " choose a new active Pokemon.\n";
+	player.print_BenchCards();
+	player.print_HandCards();
+
+	cout << "Would you like to choose from the bench(1) or from the hand(2)?\n";
+	inputInt = input(1,2);
+
+	if (inputInt == 1) {
+		player.print_BenchCards();
+		cout << "Please choose which card.\n";
+		location = input(1, player.getBenchCardsSize());
+		location --;
+		player.newActivePokemonfromBench(location);
+		return true;		
+	}
+	if (inputInt == 2) {
+		if (!player.hasPokemonInHand()) {
+			cout << "No pokemon in hand\n";
+			return chooseNewPokemon(player);
+		}
+		player.print_HandCards();
+		cout << "Please choose which card.\n";
+		location = input(1, player.getHandCardsSize());
+		location --;
+		player.newActivePokemonfromHand(location);
+	}
+	return false;
 }
