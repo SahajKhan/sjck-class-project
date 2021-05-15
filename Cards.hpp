@@ -99,9 +99,6 @@ public:
 			hitPoints = maxHP; // do we need to destroy/discard the healing card? wasnt sure how you had that programmed
 		else
 			hitPoints += healingAmount;
-
-		/*TODO:
-				Move potion card to discard pile*/
 	}
 
 	bool containsEnergy() {
