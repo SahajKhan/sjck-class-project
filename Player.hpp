@@ -106,23 +106,14 @@ public:
 
     /*Draw a card from pokemonDeck and place into players hand*/
     void drawCard() {
-        if (handCards.size() < 1) {
+        if (pokemonDeck.size() < 1) {
             cout << "You don't have any cards left";
             return;
         }
         handCards.push_back(pokemonDeck.back()); //Last element of vector is copied to handCards
         pokemonDeck.pop_back();                  //Delete last element in pokemonDeck
     }
-
-    /*Set active Pokemon, if the card chosen is not a Pokemon, return false*/
-    bool setActivePokemon(int vectorLocation) {
-        if (handCards[vectorLocation]->getCardType() != CardType::POKEMON)
-            return false;
-
-        activePokemon = (Pokemon*)handCards[vectorLocation]; //Cast Card* into Pokemon* and set it as activePokemon
-        handCards.erase(handCards.begin() + vectorLocation); //Remove ptr from vector
-        return true;
-    }
+    
 
     /*Displays all bench cards*/
     void print_BenchCards() {
@@ -153,10 +144,11 @@ public:
 				handCards.erase(handCards.begin() + i);
 				activePokemon->incrementEnergy();
 				return;
-			} else {
-                cout << "No energy card available.\n"; //throw exception here
-            }
+			}
 		}
+        
+        cout << "No energy card available.\n"; //throw exception here
+
     }
 
     /*Add energy to a pokemon on the bench*/
@@ -177,20 +169,33 @@ public:
         activePokemon->recieveDamage(damage);
     }
 
-    void newActivePokemonfromBench(int location) {
+    /*Set active Pokemon, if the card chosen is not a Pokemon, return false*/
+    bool newActivePokemonfromBench(int vectorLocation) {
+        if (benchCards[vectorLocation]->getCardType() != CardType::POKEMON)
+            return false; //not a type pokemon
+
         discardPile.push_back(activePokemon);
-        activePokemon = benchCards.at(location);
-        benchCards.erase(benchCards.begin() + location);
+        activePokemon = benchCards.at(vectorLocation);
+        benchCards.erase(benchCards.begin() + vectorLocation); //Remove ptr from vector
+        return true;
     }
 
-
+    /*Set active Pokemon, if the card chosen is not a Pokemon, return false*/
     bool newActivePokemonfromHand(int location) {
         if (!isPokemonCard_inHand(location)) 
             return false;
         
         discardPile.push_back(activePokemon);
-        activePokemon = (Pokemon*)handCards.at(location);
-        handCards.erase(handCards.begin() + location);
+        activePokemon = (Pokemon*)handCards.at(location);//Cast Card* into Pokemon* and set it as activePokemon
+        handCards.erase(handCards.begin() + location);   //Remove ptr from vector
+        return true;
+    }
+
+
+    /*Discard Active pokemon*/
+    void discardActivePokemon() {
+        discardPile.push_back(activePokemon);
+        activePokemon = nullptr;
     }
 
     /*Move one prize card to hand*/
@@ -249,7 +254,7 @@ public:
 
     /*Check to see if card in the deck is a pokemon, if the location given doesn't work, return false*/
     bool isPokemonCard_inHand(int location) {
-        if (handCards.at(location)->getCardType() != CardType::TRAINER) {
+        if (handCards.at(location)->getCardType() != CardType::POKEMON) {
             return false; //throw
         }
         return true;
@@ -261,12 +266,15 @@ public:
         return false;
     }
 
+    
+
     TrainerType whichTrainerType(int location) {
         if (isTrainerCard_inHand(location)) {
             TrainerCard* trainerCard = (TrainerCard*)handCards.at(location); //cast card as trainer ptr
             return trainerCard->trainerType;
         }
         //throw here
+        return TrainerType::POTION;//setting as default for now
     }
 
     
@@ -336,10 +344,15 @@ public:
 		choice2 = pokemonDeck.back();
 		pokemonDeck.pop_back();
 
-		cout << "1:\n";
-		choice1->toString();
-		cout << "\n2:\n";
-		choice2->toString();
+        //if (choice1->getCardType() == CardType::ENERGY)
+
+		cout << "1: \n";
+        cout << choice1->getName() << endl;
+		//choice1->toString();
+		cout << "\n2: \n";
+        cout << choice1->getName() << endl;
+
+		//choice2->toString();
 		cout << endl;		
 
 		choiceSelection = input(1,2);
