@@ -1,4 +1,9 @@
-//maybe create a list<pokemon> and randomly select 20 and store into players vector pile
+/*************************************************
+ Class:			CSCI201-0CC-C1-202030-VI-16R
+ Program:		Pokemon The Card Game
+ Instructor:	Kristopher Roberts
+ Author:        Sahaj Khan, Kimeesha Graham
+ *************************************************/
 #pragma once
 #include <list>
 #include "ElementalType.hpp"

@@ -2,6 +2,7 @@
  Class:			CSCI201-0CC-C1-202030-VI-16R
  Program:		Pokemon The Card Game
  Instructor:	Kristopher Roberts
+ Author:		Sahaj Khan, CSCI 201 teamates
  *************************************************/
 #pragma once
 #include <string>
